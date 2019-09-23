@@ -15,22 +15,6 @@ const SpotifyStrategy = require("passport-spotify").Strategy;
 
 let userAccessToken = "";
 
-// passport.use(
-//     new SpotifyStrategy(
-//         {
-//             clientID: client_id,
-//             clientSecret: client_secret,
-//             callbackURL: "http://localhost:8080/callback"
-//         },
-//         function(accessToken, refreshToken, expires_in, profile, done) {
-//             User.findOrCreate({ spotifyId: profile.id }, function(err, user) {
-//                 console.log(user);
-//                 return done(err, user);
-//             });
-//         }
-//     )
-// );
-
 passport.use(
     new SpotifyStrategy(
         {
@@ -50,24 +34,23 @@ passport.use(
 
 app.use(passport.initialize());
 
-app.get(
-    "/",
-    passport.authenticate("spotify", {
-        scope: [
-            "user-read-email",
-            "user-read-private",
-            "user-top-read",
-            "user-follow-read",
-            "playlist-modify-private",
-            "playlist-modify-public",
-            "ugc-image-upload"
-        ],
-        showDialog: true
-    }),
-    (req, res) => {
-        console.log("Will never make it here...");
-    }
-);
+const config = {
+    scope: [
+        "user-read-email",
+        "user-read-private",
+        "user-top-read",
+        "user-follow-read",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        "ugc-image-upload"
+    ],
+    showDialog: true
+};
+
+app.get("/", passport.authenticate("spotify", config), (req, res) => {
+    console.log("Will never make it here...");
+    res.send("test...");
+});
 
 app.get(
     "/callback",
