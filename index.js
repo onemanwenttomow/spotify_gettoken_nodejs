@@ -1,18 +1,12 @@
-const express = require("express");
-const { client_id, client_secret } = require("./secrets");
+const express                       = require("express");
+const passport                      = require("passport");
+const { client_id, client_secret }  = require("./secrets");
 const app = express();
 
-const passport = require("passport");
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
 
-passport.serializeUser(function(user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function(obj, done) {
-    done(null, obj);
-});
 const SpotifyStrategy = require("passport-spotify").Strategy;
-
 let userAccessToken = "";
 
 passport.use(
@@ -22,12 +16,10 @@ passport.use(
             clientSecret: client_secret,
             callbackURL: "http://localhost:8080/callback"
         },
-        function(accessToken, refreshToken, expires_in, profile, done) {
+        (accessToken, refreshToken, expires_in, profile, done) => {
             userAccessToken = accessToken;
             console.log("uAT in Use: ", userAccessToken);
-            process.nextTick(function() {
-                return done(null, profile);
-            });
+            process.nextTick(() => done(null, profile));
         }
     )
 );
@@ -52,12 +44,8 @@ app.get("/", passport.authenticate("spotify", config), (req, res) => {
     res.send("test...");
 });
 
-app.get(
-    "/callback",
-    passport.authenticate("spotify", { failureRedirect: "/login" }),
-    (req, res) => {
-        res.redirect("/app");
-    }
+app.get("/callback", passport.authenticate("spotify", { failureRedirect: "/login" }),
+    (req, res) => res.redirect("/app")
 );
 
 app.get("/app", (req, res) => {
@@ -65,6 +53,4 @@ app.get("/app", (req, res) => {
     res.send('<h1>WORKED!</h1>');
 });
 
-app.listen(process.env.PORT || 8080, () =>
-    console.log("I'm listening on 8080 or process.env.PORT")
-);
+app.listen(process.env.PORT || 8080, () => console.log("I'm listening on 8080 or process.env.PORT"));
